@@ -60,3 +60,12 @@ function toISOString(date) {
     + '.' + String((date.getUTCMilliseconds() / 1000).toFixed(3)).slice(2, 5)
     + 'Z';
 }
+
+
+function pad(number) {
+  var r = String(number);
+  if(r.length === 1) {
+    r = '0' + r;
+  }
+  return r;
+}

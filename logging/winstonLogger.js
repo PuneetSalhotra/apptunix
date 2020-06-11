@@ -9,8 +9,8 @@ let logger          = require('./logger');
 let Logger          = {};
 
 Logger.options = {
-  name          : 'fugu-logs',
-  filename      : path.join(__dirname, '..', 'fugu_logs/fugu.log'),
+  name          : 'apptunix',
+  filename      : path.join(__dirname, '..', 'apptunix_logs/test.log'),
   datePattern   : '.dd-MM-yyyy',
   maxDays       : 3,
   zippedArchive : true

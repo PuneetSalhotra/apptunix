@@ -10,10 +10,6 @@ if(!allowedConfigs.has(process.env.NODE_ENV)){
 process.env.NODE_CONFIG_DIR = __dirname + '/configuration/';
 config = require('config');
 
-let newrelic;
-if(config.get('newRelicEnabled')){
-  newrelic = require('newrelic');
-}
 process.configuration = config;
 
 /** @namespace */
@@ -28,23 +24,18 @@ const bodyParser                             = require('body-parser');
 const path                                   = require('path');
 const morgan                                 = require('morgan');
 const requireg                               = require('requireg');
-const Config                                 = require('./Config');
 const dbHandler                              = require('./databases/mysql').dbHandler;
 const logger                                 = require('./logging/logger');
 const constants                              = require('./utils/constants');
 const utils                                  = require('./utils/utility');
+const chathandler                            = require('./modules/chatHanler/controller/controller');
 let app                                      = express();
-
-
-
-require('./modules');
 
 global.base_dir                = __dirname;
 const logHandler = {
   apiModule : "server",
   apiHandler : "logger"
 };
-
 
 //add uuid to each request
 app.use(function(req, res, next) {
@@ -64,22 +55,6 @@ app.use(morgan(function (tokens, req, res) {
   ].join(' ')
 }));
 
-
-
-// middlewares
-app.use(bodyParser.json({limit: '100mb'}));
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(function(req, res, next) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.header("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE");
-  //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers, app_version, device_type, access_token");
-
-  next();
-});
-
-
 // server and db up and running
 app.get('/ping', function (req, res) {
   res.send(200, {}, { pong: true });
@@ -94,16 +69,46 @@ app.get('/heartbeat',  function(req, res, next) {
 });
 
 
-app.set('port', process.env.PORT || config.get('PORT'));
+const server = http.Server(app);
 
-const httpServer = http.createServer(app);
+server.listen(process.env.PORT || config.get('PORT'), "localhost", function(error) {
+  if (error) {
+    console.error("Unable to listen on port", process.env.PORT || config.get('PORT'), error);
+    return;
+  }
 
-httpServer.listen(app.get('port'), function () {
-  console.log('Express server listening on port ' + app.get('port'));
+  console.log("Express server is listening at port", process.env.PORT || config.get('PORT'));
 });
+
+const io = require('socket.io')(server);
+
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/index.html');
+});
+
+
+io.on('connection', chathandler.handleSocket);
+
+process.on("message", function(message){
+  console.log("Received signal : " + message);
+  if (message === 'shutdown') {
+    console.log("Shutting down server");
+    httpServer.close();
+    setTimeout(function(){
+      process.exit(0);
+    }, 15000);
+  }
+});
+
+
+global.io = io;
+global.app = express.Router();
+
 
 process.on("uncaughtException", function(err) {
   console.error(utils.getCurrentTime() + " uncaughtException: " + err.message);
+  console.error(err);
   console.error(err.stack);
 });
 
+require('./modules');

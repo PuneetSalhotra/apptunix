@@ -4,6 +4,6 @@ exports.cache = {
 };
 
 exports.chatType = {
-  OneToOne : 1,
+  oneToOne : 1,
   group    : 2
 }

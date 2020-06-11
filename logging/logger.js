@@ -13,7 +13,7 @@ const    cache          = require('memory-cache');
 const constants         = require('../Utils/constants');
 const _                 = require('underscore');
 const    utils          = require('../utils/utility');
-const winstonLogger     = require('./winston_logger');
+const winstonLogger     = require('./winstonLogger');
 
 var levels = {
   trace : 0,
@@ -37,12 +37,11 @@ var debuggingPermissions = {
   globalLoggingLevel  : levels.info,
   defaultLoggingLevel : levels.trace,
 
-  user : {
+  chathandler : {
     loggingEnabled      : true,
     defaultLoggingLevel : levels.trace,
 
-    userLogout           : false,
-    getUsers             : false
+    handleSocket           : true
   }
 };
 

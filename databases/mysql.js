@@ -49,6 +49,15 @@ let dbHandler = {
         }
       });
     });
+  },
+  query : function (logHandler, event, sql, values, cb) {
+    const start = new Date();
+    let queryObj = connection.query(sql, values, (err, result) => {
+      let resultLog = (!logHandler.logResultLength) ? result : ((result) ? { RESULT_LENGTH : result.length } : { RESULT_LENGTH : 0 });
+      logger.logDatabaseQuery(logHandler, event, queryObj.sql, resultLog, err);
+      logger.trace(logHandler, { query_duration : (new Date() - start) + " ms ", event : event });
+      return cb(err, result);
+    });
   }
 };
 
