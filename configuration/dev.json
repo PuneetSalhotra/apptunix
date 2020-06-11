@@ -1,0 +1,9 @@
+{
+  "PORT" : 3001,
+  "MYSQL" : {
+    "host" : "13.127.54.245",
+    "user" : "root",
+    "password" : "",
+    "database" : "apptunix"
+  }
+}
